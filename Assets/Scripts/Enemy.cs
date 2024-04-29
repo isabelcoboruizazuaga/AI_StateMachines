@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -8,11 +7,13 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField] private Vector3 min, max;
     [SerializeField] private Vector3 destination;
-    [SerializeField] private bool playerDetected=false;
+    [SerializeField] private bool playerDetected = false;
+    [SerializeField] private bool playerAttack = false;
 
     private GameObject player;
-    [SerializeField] private float playerDistanceDetection=30;
-    [SerializeField] private float visionAngle=45;
+    [SerializeField] private float playerDistanceDetection = 30;
+    [SerializeField] private float playerAttackDistance = 30;
+    [SerializeField] private float visionAngle = 45;
 
     // Start is called before the first frame update
     void Start()
@@ -32,7 +33,7 @@ public class Enemy : MonoBehaviour
     {
         if (playerDetected)
         {
-            destination=player.transform.position;
+            destination = player.transform.position;
         }
     }
 
@@ -45,22 +46,10 @@ public class Enemy : MonoBehaviour
     {
         while (true)
         {
-            if(Vector3.Distance(transform.position,destination) < 1.5f) //si la distancia es menor de metro y medio
+            if (Vector3.Distance(transform.position, destination) < 1.5f) //si la distancia es menor de metro y medio
             {
                 yield return new WaitForSeconds(Random.Range(0.5f, 3f));
-                Vector3 vectorPlayer= player.transform.position - transform.position;
-                if (Vector3.Angle(vectorPlayer.normalized, transform.forward)<visionAngle)
-                {
-                    playerDetected = true;
-                    StopCoroutine(Patroll());
-                    GetComponent<NavMeshAgent>().SetDestination(player.transform.position);
-                }
-                else
-                {
-                    playerDetected = false;
-                    StartCoroutine(Patroll());
-                }
-
+                RandomDestination();
             }
             yield return new WaitForEndOfFrame();
         }
@@ -72,13 +61,58 @@ public class Enemy : MonoBehaviour
         {
             if (Vector3.Distance(transform.position, player.transform.position) < playerDistanceDetection) //si la distancia es menor de metro y medio
             {
-                yield return new WaitForSeconds(Random.Range(0.5f, 3f));
-                RandomDestination();
+                Vector3 vectorPlayer = player.transform.position - transform.position;
+                if (Vector3.Angle(vectorPlayer.normalized, transform.forward) < visionAngle)
+                {
+                    playerDetected = true;
+                    GetComponent<NavMeshAgent>().SetDestination(player.transform.position);
+                    StopCoroutine(Patroll());
+                    break;
+
+                    //StopCoroutine("Patroll");
+                    //StartCoroutine(Attack());
+                }
+                else
+                {
+                    playerDetected = false;
+                }
+
             }
             yield return new WaitForEndOfFrame();
         }
+        //StartCoroutine(Attack());
     }
 
+    IEnumerator Attack()
+    {
+        StopCoroutine("Alert");
+        while (true)
+        {
+            /*if (playerDetected)
+            {
+                StartCoroutine(Patroll());
+                StartCoroutine(Alert());
+                StopCoroutine(Attack());
+            }*/
+            if (Vector3.Distance(transform.position, player.transform.position) < playerAttackDistance)
+            {
+                //GetComponent<NavMeshAgent>().isStopped = true;
+                GetComponent<NavMeshAgent>().SetDestination(transform.position);
+                GetComponent<NavMeshAgent>().velocity = Vector3.zero;
+
+                //Atacamos
+                playerAttack = true;
+            }
+            else
+            {
+                GetComponent<NavMeshAgent>().SetDestination(player.transform.position);
+                playerAttack = true;
+
+            }
+
+
+        }
+    }
 
     /*
     //Detección por trigger
