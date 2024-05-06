@@ -31,10 +31,10 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
-        if (playerDetected)
+       /* if (playerDetected)
         {
             destination = player.transform.position;
-        }
+        }*/
     }
 
     private void RandomDestination()
@@ -68,9 +68,6 @@ public class Enemy : MonoBehaviour
                     GetComponent<NavMeshAgent>().SetDestination(player.transform.position);
                     StopCoroutine(Patroll());
                     break;
-
-                    //StopCoroutine("Patroll");
-                    //StartCoroutine(Attack());
                 }
                 else
                 {
@@ -80,7 +77,7 @@ public class Enemy : MonoBehaviour
             }
             yield return new WaitForEndOfFrame();
         }
-        //StartCoroutine(Attack());
+        StartCoroutine(Attack());
     }
 
     IEnumerator Attack()
@@ -88,12 +85,7 @@ public class Enemy : MonoBehaviour
         StopCoroutine("Alert");
         while (true)
         {
-            /*if (playerDetected)
-            {
-                StartCoroutine(Patroll());
-                StartCoroutine(Alert());
-                StopCoroutine(Attack());
-            }*/
+            
             if (Vector3.Distance(transform.position, player.transform.position) < playerAttackDistance)
             {
                 //GetComponent<NavMeshAgent>().isStopped = true;
@@ -105,10 +97,21 @@ public class Enemy : MonoBehaviour
             }
             else
             {
-                GetComponent<NavMeshAgent>().SetDestination(player.transform.position);
-                playerAttack = true;
+                destination=player.transform.position;
+               GetComponent<NavMeshAgent>().SetDestination(destination);
+                playerAttack = false;
+                if (Vector3.Distance(transform.position, player.transform.position) >= playerDistanceDetection)
+                {
+                    playerDetected = false;
+                    StartCoroutine(Patroll());
+                    StartCoroutine(Alert());
+                    StopCoroutine(Attack());
+                    //break;
+                }
 
-            }
+
+                }
+            yield return new WaitForEndOfFrame();
 
 
         }
